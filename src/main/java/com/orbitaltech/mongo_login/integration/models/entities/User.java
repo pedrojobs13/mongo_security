@@ -1,25 +1,25 @@
 package com.orbitaltech.mongo_login.integration.models.entities;
 
+import com.orbitaltech.mongo_login.integration.models.embedded.Role;
+import com.orbitaltech.mongo_login.integration.models.embedded.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Document
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class User implements UserDetails {
     @Id
     private String id;
@@ -27,7 +27,15 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
-    private Set<Role> roles = new HashSet<>();
+    private Set<UserRole> roles = new HashSet<>();
+
+
+    public User(String username, String password, String email, UserRole role) {
+        this.username = username;
+        this.password = password;
+        roles.add(role);
+    }
+
 
     public boolean hasRole(String roleName) {
         return getRoles().stream()
@@ -37,27 +45,28 @@ public class User implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+    public Set<UserRole> getAuthorities() {
+        return this.roles;
     }
+
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return false;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return false;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return false;
     }
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return false;
     }
 }

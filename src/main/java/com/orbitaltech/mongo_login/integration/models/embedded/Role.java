@@ -1,4 +1,4 @@
-package com.orbitaltech.mongo_login.integration.models.entities;
+package com.orbitaltech.mongo_login.integration.models.embedded;
 
 
 import lombok.AllArgsConstructor;
@@ -9,9 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collation = "role")
 public class Role {
 
-    private Long id;
-    private String authority;
+    private String name;
 }
