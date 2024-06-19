@@ -4,7 +4,9 @@ import com.orbitaltech.mongo_login.integration.models.embedded.Role;
 import com.orbitaltech.mongo_login.integration.models.embedded.UserRole;
 import com.orbitaltech.mongo_login.integration.models.entities.User;
 import com.orbitaltech.mongo_login.integration.repository.UserRepository;
+import com.orbitaltech.mongo_login.presentation.dto.LoginResponseDTO;
 import com.orbitaltech.mongo_login.presentation.dto.RegisterDTO;
+import com.orbitaltech.mongo_login.service.TokenService;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,9 @@ public class ResourceController {
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private TokenService tokenService;
 
     @RolesAllowed("ROLE_ADMIN")
     @GetMapping("/admin")
@@ -63,7 +68,9 @@ public class ResourceController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
         var auth = authenticationManager.authenticate(usernamePassword);
 
-        return ResponseEntity.ok().build();
+        var token = tokenService.generateToken((User)auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @GetMapping("/entrar")
