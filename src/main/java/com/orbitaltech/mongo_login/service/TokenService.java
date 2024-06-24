@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
@@ -21,10 +23,16 @@ public class TokenService {
     public String generateToken(UserDetails user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
+
+            List<String> roles = user.getAuthorities().stream()
+                    .map(authority -> authority.getAuthority())
+                    .collect(Collectors.toList());
+
             String token = JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(user.getUsername())
                     .withExpiresAt(genExpirationDate())
+                    .withClaim("roles", roles)
                     .sign(algorithm);
             return token;
         } catch (JWTCreationException exception) {
@@ -42,6 +50,21 @@ public class TokenService {
                     .getSubject();
         } catch (JWTVerificationException exception) {
             return "";
+        }
+    }
+
+    public boolean hasRole(String token, String role) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            List<String> roles = JWT.require(algorithm)
+                    .withIssuer("auth-api")
+                    .build()
+                    .verify(token)
+                    .getClaim("roles").asList(String.class);
+
+            return roles.contains(role);
+        } catch (JWTVerificationException exception) {
+            return false;
         }
     }
 

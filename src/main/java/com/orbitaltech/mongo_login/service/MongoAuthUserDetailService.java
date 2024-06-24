@@ -1,19 +1,16 @@
 package com.orbitaltech.mongo_login.service;
 
+import com.orbitaltech.mongo_login.integration.models.embedded.Role;
 import com.orbitaltech.mongo_login.integration.models.entities.User;
 import com.orbitaltech.mongo_login.integration.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -28,12 +25,12 @@ public class MongoAuthUserDetailService implements UserDetailsService {
 
         User user = userRepository.findUserByUsername(userName);
 
-        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+        for (GrantedAuthority grantedAuthorities : user.getAuthorities()) {
+            user.addRole(new Role(grantedAuthorities.getAuthority()));
+        }
 
-        user.getAuthorities()
-                .forEach(role -> grantedAuthorities.add(new SimpleGrantedAuthority(role.getRole().getName())));
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
+        return user;
     }
 
 
